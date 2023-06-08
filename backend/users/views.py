@@ -132,6 +132,12 @@ def forgot_password(request):
 @csrf_exempt
 def reset_password(request, uidb64, token):
     if request.method == 'POST':
+        json_data = json.loads(request.body)
+        new_password = json_data.get('new_password')
+
+        if not new_password:
+            return JsonResponse({'success': False, 'message': 'Please provide new password.'})
+
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
@@ -140,11 +146,10 @@ def reset_password(request, uidb64, token):
             return JsonResponse({'success': False, 'message': 'Invalid reset link.'})
 
         if default_token_generator.check_token(user, token):
-            new_password = request.POST.get('new_password')
             user.set_password(new_password)
             user.save()
             return JsonResponse({'success': True, 'message': 'Password reset successfully.'})
-        else:
-            return JsonResponse({'success': False, 'message': 'Invalid reset link.'})
+
+        return JsonResponse({'success': False, 'message': 'Invalid reset link.'})
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
