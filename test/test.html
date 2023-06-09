@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Image Capture</title>
+</head>
+
+<body>
+  <h1>Image Capture</h1>
+  <div id="app">
+    <input type="text" id="personNameInput" value="rupesh" placeholder="Person's Name">
+  </div>
+
+  <script>
+    const personNameInput = document.getElementById('personNameInput');
+    const videoElement = document.createElement('video');
+    const canvasElement = document.createElement('canvas');
+    const captureButton = document.createElement('button');
+    const photoContainer = document.createElement('div');
+
+    videoElement.autoplay = true;
+    captureButton.textContent = 'Capture';
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        videoElement.srcObject = stream;
+        document.body.appendChild(videoElement);
+        document.body.appendChild(captureButton);
+        document.body.appendChild(photoContainer);
+      })
+      .catch(error => console.error('Error accessing camera:', error));
+
+    const captureImages = () => {
+      const captureInterval = 1000; // Capture every 100ms
+      const captureDuration = captureInterval * 10; // Capture for 5 seconds
+      const images = [];
+
+      const captureImage = () => {
+        const context = canvasElement.getContext('2d');
+
+        // Set canvas dimensions to match the video element
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+
+        // Draw the video frame onto the canvas
+        context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+        // Create a temporary canvas for image manipulation
+        const tempCanvas = document.createElement('canvas');
+        const tempContext = tempCanvas.getContext('2d');
+
+        // Set temporary canvas dimensions to match the video element
+        tempCanvas.width = videoElement.videoWidth;
+        tempCanvas.height = videoElement.videoHeight;
+
+        // Copy the image from the main canvas to the temporary canvas
+        tempContext.drawImage(canvasElement, 0, 0);
+
+        // Create a new image element to hold the corrected image
+        const photo = new Image();
+
+        // Rotate and resize the image using the temporary canvas
+        const MAX_WIDTH = 800; // Adjust the maximum width as needed
+        const MAX_HEIGHT = 600; // Adjust the maximum height as needed
+        let width = tempCanvas.width;
+        let height = tempCanvas.height;
+
+        // Check if the image needs to be resized
+        if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+          const aspectRatio = width / height;
+
+          if (width > MAX_WIDTH) {
+            width = MAX_WIDTH;
+            height = width / aspectRatio;
+          }
+
+          if (height > MAX_HEIGHT) {
+            height = MAX_HEIGHT;
+            width = height * aspectRatio;
+          }
+        }
+
+        // Rotate the image 90 degrees clockwise
+        tempContext.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        tempCanvas.width = height;
+        tempCanvas.height = width;
+        tempContext.translate(height / 2, width / 2);
+        // tempContext.rotate(90 * Math.PI / 180);
+        tempContext.drawImage(canvasElement, -canvasElement.width / 2, -canvasElement.height / 2);
+
+        // Set the source of the photo image to the corrected image data
+        photo.src = tempCanvas.toDataURL('image/jpeg');
+        images.push(photo);
+
+        // Show red border for 10ms
+        videoElement.style.border = '4px solid red';
+        setTimeout(() => {
+          videoElement.style.border = 'none';
+        }, 10);
+
+        // Play sound
+        const audio = new Audio('capture_sound.mp3');
+        audio.play();
+      };
+
+
+      const stopCapture = () => {
+        clearInterval(captureIntervalId);
+        videoElement.style.border = 'none';
+
+        // Save captured images
+        const formData = new FormData();
+        formData.append('personName', personNameInput.value);
+        console.log(images);
+        images.forEach((image, index) => {
+          formData.append('image', dataURItoBlob(image.src), `image_${index + 1}.jpg`);
+        });
+
+        fetch('http://127.0.0.1:8000/playground/save_images', {
+          method: 'POST',
+          body: formData,
+        })
+          .then(response => response.text())
+          .then(data => console.log(data))
+          .catch(error => console.error('Error saving images:', error));
+      };
+
+      const captureIntervalId = setInterval(captureImage, captureInterval);
+      setTimeout(stopCapture, captureDuration);
+    };
+
+    function dataURItoBlob(dataURI) {
+      const byteString = atob(dataURI.split(',')[1]);
+      const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+      const arrayBuffer = new ArrayBuffer(byteString.length);
+      const uint8Array = new Uint8Array(arrayBuffer);
+
+      for (let i = 0; i < byteString.length; i++) {
+        uint8Array[i] = byteString.charCodeAt(i);
+      }
+
+      return new Blob([arrayBuffer], { type: mimeString });
+    }
+
+    captureButton.addEventListener('click', captureImages);
+
+  </script>
+</body>
