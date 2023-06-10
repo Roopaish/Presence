@@ -1,10 +1,16 @@
 ## Running the project
 
-1. Open VSCode, download recommended extensions of python
-2. Ctrl+shift+p, Create new virtual environment by selecting requirements.txt
-3. Open terminal, you will see venv in the terminal else activate it `name-of-the-env\Scripts\activate`
-4. python manage.py migrate
-5. python manage.py runserver
+1.  Install dependencies
+
+    > if in vscode
+
+    - Open VSCode, download recommended extensions of python
+    - Ctrl+shift+p, Create new virtual environment by selecting requirements.txt
+
+2.  Open terminal, you will see venv in the terminal else activate it `name-of-the-env\Scripts\activate`
+3.  `python manage.py migrate`
+4.  `python manage.py createsuperuser` (to create a admin then go to localhost:8000/admin and login)
+5.  `python manage.py runserver`
 
 ## Creating new app
 
@@ -14,20 +20,20 @@
 4. To see the migration query `python manage.py sqlmigrate app-name 0001`
 5. To apply changes to database `python manage.py migrate`
 
-## Creating a django project
+## Creating a django project | Useful commands
 
-1. python -m venv name-of-env (create new env to make files isolated from the system)
+1. `python -m venv name-of-env` (create new env to make files isolated from the system)
 2. Enter into the env
    name-of-the-env\Scripts\activate
    Note: To exit environment: deactivate
-3. pip install django (intall django in current env)
-4. django-admin startproject name-of-project (create a project)
-5. cd name-of-project (go to project directory)
-6. python manage.py migrate (run migrations, generate sqlite database for now)
-7. python manage.py runserver 8000(run development server, the server will start at localhost:8000, 8000 is optional, can be any port)
-8. python manage.py createsuperuser (to create a admin then go to localhost:8000/admin and login)
-9. pip freeze > requirements.txt (generate requirements file, so others know what pacakges and versions are being used)
-10. pip install -r requirements.txt (to install packages from requirements.txt)
+3. `pip install django` (intall django in current env)
+4. `django-admin startproject name-of-project` (create a project)
+5. `cd name-of-project` (go to project directory)
+6. `python manage.py migrate` (run migrations, generate sqlite database for now)
+7. `python manage.py runserver 8000`(run development server, the server will start at localhost:8000, 8000 is optional, can be any port)
+8. `python manage.py createsuperuser` (to create a admin then go to localhost:8000/admin and login)
+9. `pip freeze > requirements.txt` (generate requirements file, so others know what pacakges and versions are being used)
+10. `pip install -r requirements.txt` (to install packages from requirements.txt)
 
 ## Creating a django apps
 
