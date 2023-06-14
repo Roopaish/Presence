@@ -1,3 +1,4 @@
+import Providers from "@/configs/providers";
 import { Raleway } from "next/font/google";
 import "./globals.css";
 
@@ -15,7 +16,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${raleway.className}`}>{children}</body>
+      <Providers>
+        <body className={`${raleway.className}`}>{children}</body>
+      </Providers>
     </html>
   );
 }
