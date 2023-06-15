@@ -17,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <Providers>
-        <body className={`${raleway.className}`}>{children}</body>
+        <body className={`${raleway.className} overflow-x-hidden`}>
+          {children}
+        </body>
       </Providers>
     </html>
   );

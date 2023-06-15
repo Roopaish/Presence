@@ -1,7 +1,7 @@
 export default function HomePage() {
   return (
     <main className="px-16 py-24 font-extrabold text-xl text-white">
-      <section className="flex gap-5 ">
+      <section className=" md:flex gap-5 ">
         <div className=" h-48 w-48 bg-primary rounded-md">
           {/* <span>
             <img
