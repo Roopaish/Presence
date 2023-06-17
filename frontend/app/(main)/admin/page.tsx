@@ -1,4 +1,4 @@
-export default function HomePage() {
+export default function AdminPage() {
   return (
     <main className="px-16 py-24 font-extrabold text-xl text-white">
       <section className=" md:flex gap-5 ">
@@ -11,7 +11,6 @@ export default function HomePage() {
               width=""
             ></img>
           </span> */}
-
           <p className="px-2 pb-4">Start Taking Attendance </p>
         </div>
         <div className="h-48 w-48 bg-primary rounded-md">
