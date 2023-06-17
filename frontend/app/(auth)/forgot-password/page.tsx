@@ -6,21 +6,23 @@ import React from "react";
 
 export default function Forgotpassword() {
   return (
-    <main className="px-5 py-8">
+    <main className="px-5 py-14">
       <div className="flex flex-col gap-1 justify-between items-center w-full">
         <header className="text-center mb-10">
-          <Icon type="logo" className="w-24 h-24 mx-auto"></Icon>
+          <Icon type="logo" className="w-24 h-24 mx-auto "></Icon>
           <h3 className="text-xl font-bold">
             Enter your email to get a reset link
           </h3>
-          <h2> Back to Sign in</h2>
+          <Link className="flex gap-1 justify-center" href="/login">
+            <Icon type="back" className="w-4" />
+            <h2> Back to Sign in</h2>
+          </Link>
         </header>
       </div>
 
       <section className="max-w-md mx-auto p-6  rounded-lg text-black">
-        <form className="w-full space-y-4 ">
+        <form className="w-full">
           <Input
-        
             type="email"
             name="email"
             placeholder="ram.191704@ncit.edu.np"
@@ -28,7 +30,9 @@ export default function Forgotpassword() {
             label="College Email"
           />
           <Link href="/reset-password">
-            <Button type="submit">Submit</Button>
+            <div className="mt-8">
+              <Button type="submit">Submit</Button>
+            </div>
           </Link>
         </form>
       </section>
