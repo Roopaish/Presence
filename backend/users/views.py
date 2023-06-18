@@ -1,4 +1,5 @@
 import json
+import os
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -48,7 +49,7 @@ def signup(request):
             user = User.objects.create_user(
                 username=username, email=email, password=password,
                 first_name=first_name, last_name=last_name,
-                extra_fields={'is_superuser': is_superuser or False}
+                is_superuser = is_superuser or False
             )
 
             user.save()
@@ -99,6 +100,7 @@ def get_current_user(request):
         'email': user.email,
         'first_name': user.first_name,
         'last_name': user.last_name,
+        'has_submitted_images': user.is_staff or False,
         'is_superuser': user.is_superuser or False
     }
     return JsonResponse({'success': True, 'data': user_data})
@@ -198,3 +200,28 @@ def google_login(request):
             return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=400)
+
+@login_required
+@csrf_exempt
+def save_images(request):
+    try:
+        email = request.user.email
+        images = request.FILES.getlist('image')
+
+        folder_path = os.path.join('datasets', email)
+
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        
+        for index, image in enumerate(images):
+                file_path = os.path.join(folder_path, f'{index + 1}.jpg')
+                with open(file_path, 'wb') as f:
+                    for chunk in image.chunks():
+                        f.write(chunk)
+
+        request.user.is_staff = True
+        request.user.save()
+
+        return JsonResponse({'success': True, 'message': 'Images saved successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
