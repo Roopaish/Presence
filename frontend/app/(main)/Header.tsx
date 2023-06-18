@@ -1,10 +1,11 @@
 "use client";
 
 import Icon from "@/components/Icon";
+import { queryClient } from "@/configs/providers";
 import { UserData, logout, me } from "@/providers/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 
 export default function Header() {
@@ -35,20 +36,34 @@ export default function Header() {
     mutationKey: "logout",
     mutationFn: logout,
     onSuccess: () => {
-      console.log("logged out")
       router.push('/login')
     },
     onError: () => {
-      console.log("logged out err")
       router.push('/login')
     }
   })
+
+  // Websocket
+  useEffect(() => {
+    const socket = new WebSocket('ws://localhost:8000/ws/logs/');
+
+    socket.onmessage = (event) => {
+      const logMessage = event.data;
+
+      queryClient.setQueryData('logs', (prevLogs) => [...prevLogs, logMessage]);
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
+
   return (
     <>
       <header className="shadow-md">
         <nav className="p-5 max-w-7xl mx-auto">
           <section className="flex justify-between">
-            <Link href="/">
+            <Link href={user?.data.is_superuser ? "/admin" : "/"}>
               <div className="text-primary font-bold text-2xl flex">
                 <Icon type="logo" className="w-8 h-8" />
                 <span>Presence</span>

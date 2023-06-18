@@ -21,7 +21,10 @@ ALLOWED_HOSTS=['*']
 
 INSTALLED_APPS = [
     'corsheaders',
+    'channels',
     'users.apps.UsersConfig',
+    'websockets.apps.WebsocketsConfig',
+    'authority.apps.AuthorityConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -29,6 +32,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
+
+ASGI_APPLICATION = 'presence.asgi.application'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
