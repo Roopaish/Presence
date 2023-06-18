@@ -1,7 +1,11 @@
 'use client'
 
 import Calendar from "@/components/Calendar";
+import Icon from "@/components/Icon";
+import Stats from "@/components/Stats";
 import { me } from "@/providers/auth";
+import { getGreeting } from "@/utils/getGreeting";
+import Link from "next/link";
 import { useQuery } from "react-query";
 import { useState } from "react";
 

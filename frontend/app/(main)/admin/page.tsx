@@ -1,25 +1,32 @@
+'use client'
+
+import AdminCard from "@/components/AdminCard";
+import Link from "next/link";
+import { useState } from "react";
+
 export default function AdminPage() {
+  const [takingAttendance, setTakingAttendance] = useState(false);
+
   return (
-    <main className="px-16 py-24 font-extrabold text-xl text-white">
-      <section className=" md:flex gap-5 ">
-        <div className=" h-48 w-48 bg-primary rounded-md">
-          {/* <span>
-            <img
-              src=" https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSP5835DTsb0lMiEfABjuLGdcxv8qz6o_tjYxzU6KLKJCulTYEQW8oZeTmvj9P7WHMe9Qk&usqp=CAU"
-              alt=""
-              height=""
-              width=""
-            ></img>
-          </span> */}
-          <p className="px-2 pb-4">Start Taking Attendance </p>
-        </div>
-        <div className="h-48 w-48 bg-primary rounded-md">
-          <p className="px-2 pb-4">View Reports</p>
-        </div>
-        <div className="h-48 w-48 bg-primary rounded-md">
-          <p className="px-2 pb-4">Manage Students</p>
-        </div>
-      </section>
-    </main>
+    <section className="gap-5 grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2">
+      <Link href="/admin/students">
+        <AdminCard title="Students Data" />
+      </Link>
+      <Link href="/admin/reports">
+        <AdminCard title="View Reports" />
+      </Link>
+      <button onClick={() => setTakingAttendance(!takingAttendance)}>
+        <AdminCard title={takingAttendance ? "Stop Taking Attendance" : "Start Taking Attendance"}>
+          {
+            takingAttendance && (
+              <div className="flex gap-5 items-center justify-center h-full">
+                <div className="w-10 h-10 rounded-full bg-red-600 animate-blink"></div>
+                <h2 className="text-3xl font-extrabold text-white">REC</h2>
+              </div>
+            )
+          }
+        </AdminCard>
+      </button>
+    </section>
   );
 }

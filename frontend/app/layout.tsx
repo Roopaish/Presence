@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={raleway.className}>
       <Providers>
-        <body className="overflow-x-hidden">
+        <body className="overflow-x-hidden font-normal">
           <ToastContainer />
           {children}
         </body>
