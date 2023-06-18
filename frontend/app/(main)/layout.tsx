@@ -8,7 +8,7 @@ export default function RootLayout({
   return (
     <>
       <Header />
-      <main className="p-5 max-w-7xl mx-auto">{children}</main>
+      <main className="p-5 mb-20 max-w-7xl mx-auto mt-9">{children}</main>
     </>
   );
 }

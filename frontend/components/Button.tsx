@@ -5,6 +5,7 @@ export default function Button({
   children,
   className,
   type,
+  disabled,
   variant = "solid",
   isLoading = false,
   ...rest
@@ -18,6 +19,7 @@ export default function Button({
 >) {
   return (
     <button
+      disabled={disabled}
       type={type ?? "button"}
       {...rest}
       className={clsx(
@@ -26,7 +28,8 @@ export default function Button({
         variant == "solid" &&
         "bg-primary text-white hover:bg-primary-500 border-none ",
         variant == "outline" &&
-        "bg-transparent border border-black hover:bg-primary-50"
+        "bg-transparent border border-black hover:bg-primary-50",
+        disabled && "bg-gray-300 text-gray-500 cursor-not-allowed",
       )}
     >
       {isLoading ? <div className="h-7 w-7 rounded-full border-2 border-l-transparent animate-spin"></div> : children}
