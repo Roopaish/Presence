@@ -21,7 +21,7 @@ export default function Header() {
       }
     },
     onError: () => {
-      router.push('/login')
+      router.push('/')
     }
   })
 
@@ -85,7 +85,7 @@ export default function Header() {
         </section> */}
       </header>
 
-      {
+      {/* {
         isLoading && (
           <div className="flex flex-col justify-center items-center absolute inset-0 z-50 bg-white">
             <header className="text-center mb-10">
@@ -95,7 +95,7 @@ export default function Header() {
             <div className="h-12 w-12 rounded-full border-4 border-primary border-l-transparent animate-spin"></div>
           </div>
         )
-      }
+      } */}
     </>
   );
 }
