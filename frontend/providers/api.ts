@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const apiURL = "http://192.168.1.99:8000";
+export const apiURL = "http:localhost:3000";
 
 axios.defaults.withCredentials = true;
 const api = axios.create({

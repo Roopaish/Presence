@@ -2,7 +2,7 @@ import { CalendarData, getCalendarData } from '@/utils/getCalendarData'; // Assu
 import { useEffect, useState } from 'react';
 import Button from './Button';
 
-const Calendar = ({ month, year,handleChange }: { month: number; year: number,handleChange:(event:React.ChangeEvent<>)=>void }) => {
+const Calendar = ({ month, year,handleChange }: { month: number; year: number,handleChange:(event:React.ChangeEvent<HTMLSelectElement>)=>void }) => {
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
 
   useEffect(() => {
@@ -88,21 +88,6 @@ const Calendar = ({ month, year,handleChange }: { month: number; year: number,ha
 );
 
 
-
-//   return (<section className='grid border'>
-//             <div>
-//            <h1>month select</h1>
-//         </div>
-//       <div className="grid grid-cols-7 gap-2">
-//         {daysOfWeek.map((day) => (
-//           <div key={day} className="text-center font-bold border">
-//             {day}
-//           </div>
-//         ))}
-//         {renderCalendarDays()}
-//       </div>
-//     </section>
-// );
 };
 
 export default Calendar;
