@@ -39,11 +39,17 @@ def encode_images(request):
             'log_group',
             {
                 'type': 'log_message',
-                'message': f"Processed image {i+1}/{len(image_paths)}"
+                'message': f"Processed image {i+1}/{len(image_paths)} of {name}"
             }
         )
 
-    print("[INFO] Serializing encodings...")
+    async_to_sync(channel_layer.group_send)(
+            'log_group',
+            {
+                'type': 'log_message',
+                'message': f"[INFO] Serializing encodings..."
+            }
+        )
     data = {"encodings": known_encodings, "names": known_names}
     with open(encodings_path, "wb") as f:
         f.write(pickle.dumps(data))

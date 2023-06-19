@@ -1,11 +1,10 @@
 "use client";
 
 import Icon from "@/components/Icon";
-import { queryClient } from "@/configs/providers";
 import { UserData, logout, me } from "@/providers/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery } from "react-query";
 
 export default function Header() {
@@ -42,21 +41,6 @@ export default function Header() {
       router.push('/login')
     }
   })
-
-  // Websocket
-  useEffect(() => {
-    const socket = new WebSocket('ws://localhost:8000/ws/logs/');
-
-    socket.onmessage = (event) => {
-      const logMessage = event.data;
-
-      queryClient.setQueryData('logs', (prevLogs) => [...prevLogs, logMessage]);
-    };
-
-    return () => {
-      socket.close();
-    };
-  }, []);
 
   return (
     <>

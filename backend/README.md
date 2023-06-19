@@ -1,16 +1,10 @@
 ## Running the project
 
-1.  Install dependencies
-
-    > if in vscode
-
-    - Open VSCode, download recommended extensions of python
-    - Ctrl+shift+p, Create new virtual environment by selecting requirements.txt
-
-2.  Open terminal, you will see venv in the terminal else activate it `name-of-the-env\Scripts\activate`
+1.  Install dependencies `pip install -r requirements.txt`
+2.  Open terminal, you will see venv in the terminal else activate it `.venv\Scripts\activate`
 3.  `python manage.py migrate`
-4.  `python manage.py createsuperuser` (to create a admin then go to localhost:8000/admin and login)
-5.  `python manage.py runserver`
+4.  `python manage.py createsuperuser` (to create a admin then go to localhost:8000/admin/ and login)
+5.  `python manage.py runserver` or `daphne presence.asgi:application` to run the server with asgi configuration to handle both http and websocket requests
 
 ## Creating new app
 
@@ -76,9 +70,5 @@ Quick look at modules of app
 - models.py: define database models, which are used to interact with database
 - tests.py: define tests for the app
 - views.py: request handling logic, no html
-
-## Superuser
-
-Username: presence-admin
-Email: rupesh39943@gmail.com
-Password: presence-admin-sars
+- consumers.py: websocket handling logic
+- routing.py: routing for websocket

@@ -34,13 +34,14 @@ INSTALLED_APPS = [
 ]
 
 
+ASGI_APPLICATION = 'presence.asgi.application'
+
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
 
-ASGI_APPLICATION = 'presence.asgi.application'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
