@@ -35,20 +35,19 @@ export default function Header() {
     mutationKey: "logout",
     mutationFn: logout,
     onSuccess: () => {
-      console.log("logged out")
       router.push('/login')
     },
     onError: () => {
-      console.log("logged out err")
       router.push('/login')
     }
   })
+
   return (
     <>
       <header className="shadow-md">
         <nav className="p-5 max-w-7xl mx-auto">
           <section className="flex justify-between">
-            <Link href="/">
+            <Link href={user?.data.is_superuser ? "/admin" : "/"}>
               <div className="text-primary font-bold text-2xl flex">
                 <Icon type="logo" className="w-8 h-8" />
                 <span>Presence</span>
