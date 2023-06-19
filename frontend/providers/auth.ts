@@ -9,7 +9,8 @@ export async function login({ username, password }: LoginInputs) {
 }
 
 export async function loginWithGoogle({ token }: { token: string }) {
-  const res = await api.post<SimpleResponse>("/users/login/google", {
+  const res = await api.post<SimpleResponse>("/users/login/google", 
+  {
     token,
   });
   return res.data;
