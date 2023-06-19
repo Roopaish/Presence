@@ -1,28 +1,34 @@
 "use client";
 
 import Icon from "@/components/Icon";
-import { logout, me } from "@/providers/auth";
+import { UserData, logout, me } from "@/providers/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useMutation, useQuery } from "react-query";
 
 export default function Header() {
   // const [opened, setOpened] = useState(false);
   const router = useRouter();
+  const [dUser, setDUser] = useState<UserData | null>(null);
 
   const { data: user, isLoading } = useQuery({
     queryKey: "user",
     queryFn: me,
     onSuccess: (data) => {
-      if (data.data.is_superuser) {
-        router.push('/admin')
-      } else {
-        router.push('/')
+      if (dUser?.data.id !== data.data.id) {
+        setDUser(data);
+        if (data.data.is_superuser) {
+          router.push('/admin')
+        } else {
+          router.push('/')
+        }
       }
     },
     onError: () => {
-      router.push('/')
-    }
+      router.push('/login')
+    },
+    retry: false,
   })
 
   const { mutate: _logout, isLoading: isLogoutLoading } = useMutation({

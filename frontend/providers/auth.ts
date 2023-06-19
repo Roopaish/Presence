@@ -46,7 +46,7 @@ export async function resetPassword({
   return res.data;
 }
 
-interface UserData {
+export interface UserData {
   success: boolean;
   data: {
     id: number;
@@ -55,6 +55,7 @@ interface UserData {
     first_name: string;
     last_name: string;
     is_superuser: boolean;
+    has_submitted_images: boolean;
   };
 }
 
