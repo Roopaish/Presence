@@ -18,7 +18,7 @@ export default function StudentPage() {
   })
 
 
-  const handleChange=(event:React.ChangeEvent<HTMLInputElement>)=>{
+  const handleChange=(event:React.ChangeEvent<HTMLSelectElement>)=>{
     const number=parseInt(event.target.value)
     setCurrentMonth(number)
 
