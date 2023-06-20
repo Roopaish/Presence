@@ -12,12 +12,15 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.decorators import login_required
-
+from .models import Student
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import UserModel
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.response import Response
 from django.http import JsonResponse
-import requests
+from rest_framework.decorators import api_view
+from .serializer import StudentSerializer
+from django.shortcuts import get_object_or_404
 
 @csrf_exempt
 def signup(request):
@@ -225,3 +228,35 @@ def save_images(request):
         return JsonResponse({'success': True, 'message': 'Images saved successfully'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=400)
+    
+
+# @api_view(['GET'])
+# def student_list(request):
+#     students = Student.objects.all()
+#     serializer=StudentSerializer(students,many=True)
+#     return Response(serializer.data)
+
+def student_list(request):
+    students = Student.objects.all()
+    student_data = []
+    
+    for student in students:
+        image_path = request.build_absolute_uri(student.image.url) if student.image else None
+
+        student_data.append({
+            'id': student.id,
+            'name': student.name,
+            'email': student.email,
+            'avatar':student.avatar,
+           'image_path':image_path 
+
+        })
+    
+    return JsonResponse(student_data, safe=False)
+
+@csrf_exempt
+def student_detail(request, id):
+    student = get_object_or_404(Student, id=id)
+    student.delete()
+    
+    return JsonResponse({'msg': f'Student with id {id} has been deleted'})
