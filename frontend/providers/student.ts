@@ -27,3 +27,17 @@ const dataURItoBlob = (dataURI: string) => {
 
   return new Blob([arrayBuffer], { type: mimeString });
 };
+
+
+export async function studentList(){
+ const res=await api.get('/users/student-list')
+
+  return res.data
+}
+
+export async function deleteRecord(id:number){
+  const res=await api.post(`/users/student-list/${id}/`)
+ 
+   return res.data
+ }
+ 
