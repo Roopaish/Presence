@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const apiURL = "http://127.0.0.1:8000";
+export const apiURL = process.env.NEXT_PUBLIC_API_URL;
 
 axios.defaults.withCredentials = true;
 const api = axios.create({

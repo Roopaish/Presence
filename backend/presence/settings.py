@@ -31,7 +31,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'authority.apps.AuthorityConfig',
     'rest_framework'
 ]
 
@@ -56,9 +55,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',
-]
+CORS_ORIGIN_WHITELIST = config('CORS_ORIGIN_WHITELIST', default="").split(',')
 CORS_ALLOW_CREDENTIALS = True
 
 APPEND_SLASH = False

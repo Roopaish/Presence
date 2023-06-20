@@ -3,13 +3,12 @@
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
-// 52435459912-mem62racbffkl2io1rda8vishuidjg1n.apps.googleusercontent.com
 
 export const queryClient = new QueryClient();
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <GoogleOAuthProvider clientId="52435459912-mem62racbffkl2io1rda8vishuidjg1n.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_ID as string}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-     </GoogleOAuthProvider>
+    </GoogleOAuthProvider>
   );
 }

@@ -13,7 +13,7 @@ module.exports = {
         primary: {
           DEFAULT: "#6C6DC0",
           50: "#ededf7",
-          100: "##c9cae8",
+          100: "#c9cae8",
           200: "#a6a6d9",
           300: "#8283c9",
           400: "#5e5fba",

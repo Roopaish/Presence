@@ -1,4 +1,6 @@
+import { dataURItoBlob } from "@/utils/dataURItoBlob";
 import api, { SimpleResponse } from "./api";
+import { UserData } from "./auth";
 
 export async function saveImages({ images }: { images: { src: string }[] }) {
   const formData = new FormData();
@@ -15,29 +17,41 @@ export async function saveImages({ images }: { images: { src: string }[] }) {
   return res.data;
 }
 
-const dataURItoBlob = (dataURI: string) => {
-  const byteString = atob(dataURI.split(",")[1]);
-  const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
-  const arrayBuffer = new ArrayBuffer(byteString.length);
-  const uint8Array = new Uint8Array(arrayBuffer);
+export async function studentList() {
+  const res = await api.get<{ success: boolean; data: UserData["data"][] }>(
+    "/users/students"
+  );
 
-  for (let i = 0; i < byteString.length; i++) {
-    uint8Array[i] = byteString.charCodeAt(i);
-  }
-
-  return new Blob([arrayBuffer], { type: mimeString });
-};
-
-
-export async function studentList(){
- const res=await api.get('/users/student-list')
-
-  return res.data
+  return res.data;
 }
 
-export async function deleteRecord(id:number){
-  const res=await api.post(`/users/student-list/${id}/`)
- 
-   return res.data
- }
- 
+export async function deleteStudent(id: number) {
+  const res = await api.delete<SimpleResponse>(`/users/student/${id}`);
+
+  return res.data;
+}
+
+export async function addStudent({
+  first_name,
+  last_name,
+  password,
+  email,
+}: StudentInput) {
+  const res = await api.post<SimpleResponse>("/users/signup", {
+    email,
+    first_name,
+    last_name,
+    password,
+    password_confirm: password,
+    username: email,
+  });
+
+  return res.data;
+}
+
+interface StudentInput {
+  first_name: string;
+  last_name: string;
+  password: string;
+  email: string;
+}

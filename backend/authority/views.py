@@ -4,11 +4,11 @@ import face_recognition
 from imutils import paths
 import pickle
 from django.http import JsonResponse
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.admin.views.decorators import user_passes_test
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-@staff_member_required
+@user_passes_test(lambda u: u.is_superuser)
 def encode_images(request):
     dataset_path = 'datasets'
     encodings_path = 'encodings.pickle'

@@ -11,7 +11,6 @@ urlpatterns = [
          views.reset_password, name='reset_password'),
     path('login/google', views.google_login, name='google_login'),
     path('save-images', views.save_images, name='save_images'),
-    path('student-list',views.student_list),
-    path('student-list/<int:id>/',views.student_detail)
-
+    path('students',views.students_list),
+    path('student/<id>',views.student_detail)
 ]

@@ -7,20 +7,15 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-# from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.decorators import login_required
-from .models import Student
 from django.contrib.auth import get_user_model
-from django.contrib.auth.backends import UserModel
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.response import Response
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
-from .serializer import StudentSerializer
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import user_passes_test
 
 @csrf_exempt
 def signup(request):
@@ -236,27 +231,52 @@ def save_images(request):
 #     serializer=StudentSerializer(students,many=True)
 #     return Response(serializer.data)
 
-def student_list(request):
-    students = Student.objects.all()
+@user_passes_test(lambda u: u.is_superuser)
+def students_list(request):
+    students = User.objects.filter(is_superuser=False)
     student_data = []
-    
-    for student in students:
-        image_path = request.build_absolute_uri(student.image.url) if student.image else None
 
+    for student in students:
         student_data.append({
             'id': student.id,
-            'name': student.name,
+            'username': student.username,
             'email': student.email,
-            'avatar':student.avatar,
-           'image_path':image_path 
-
+            'first_name': student.first_name,
+            'last_name': student.last_name,
+            'has_submitted_images': student.is_staff or False,
+            'is_superuser': student.is_superuser or False
         })
-    
-    return JsonResponse(student_data, safe=False)
 
+    return JsonResponse({
+        'success': True,
+        'data': student_data
+    })
+
+
+@user_passes_test(lambda u: u.is_superuser)
 @csrf_exempt
 def student_detail(request, id):
-    student = get_object_or_404(Student, id=id)
-    student.delete()
-    
-    return JsonResponse({'msg': f'Student with id {id} has been deleted'})
+    if request.method == 'GET':
+        student = get_object_or_404(User, id=id, is_superuser=False)
+        # Customize the response data according to your requirements
+        data = {
+            'id': student.id,
+            'username': student.username,
+            'email': student.email,
+            'first_name': student.first_name,
+            'last_name': student.last_name,
+            'has_submitted_images': student.is_staff or False,
+            'is_superuser': student.is_superuser or False
+            }
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+
+    elif request.method == 'DELETE':
+        student = get_object_or_404(User, id=id, is_superuser=False)
+        student.delete()
+        return JsonResponse({'success': False, 'message': f'Student with id {id} has been deleted'})
+
+    else:
+        return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
