@@ -24,7 +24,7 @@ INSTALLED_APPS = [
     'channels',
     'users.apps.UsersConfig',
     'websockets.apps.WebsocketsConfig',
-    'authority.apps.AuthorityConfig',
+    'face_ml.apps.FaceMLConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

@@ -92,7 +92,7 @@ export default function LoginPage() {
       <section className="max-w-md mx-auto p-6 rounded-lg text-black">
         <form className="w-full space-y-4" onSubmit={onSubmit}>
           <Input
-            type="email"
+            type="text"
             name="username"
             placeholder="ram.191704@ncit.edu.np"
             required
