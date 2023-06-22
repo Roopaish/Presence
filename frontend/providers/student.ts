@@ -49,6 +49,48 @@ export async function addStudent({
   return res.data;
 }
 
+export async function getStudentAttendance({
+  month,
+  year,
+}: {
+  month: number;
+  year: number;
+}) {
+  const res = await api.get<{ success: boolean; data: Attendance }>(
+    `/users/attendance/${year}/${month}`
+  );
+
+  return res.data;
+}
+
+export async function getAllStudentAttendance({
+  month,
+  year,
+  day,
+}: {
+  month: number;
+  year: number;
+  day: number;
+}) {
+  const res = await api.get<{ success: boolean; data: AllAttendance }>(
+    `/users/all-attendance/${year}/${month}/${day}`
+  );
+
+  return res.data;
+}
+
+interface Attendance {
+  month: string;
+  year: string;
+  streak: number;
+  attendance: boolean[];
+}
+
+export interface AllAttendance {
+  present_users: { name: string; email: string }[];
+  absent_users: { name: string; email: string }[];
+}
+
 interface StudentInput {
   first_name: string;
   last_name: string;

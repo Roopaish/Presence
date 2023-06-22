@@ -12,5 +12,7 @@ urlpatterns = [
     path('login/google', views.google_login, name='google_login'),
     path('save-images', views.save_images, name='save_images'),
     path('students',views.students_list),
-    path('student/<id>',views.student_detail)
+    path('student/<id>',views.student_detail),
+    path('attendance/<year>/<month>',views.get_attendance),
+    path('all-attendance/<year>/<month>/<day>',views.get_all_attendance_of_day),
 ]

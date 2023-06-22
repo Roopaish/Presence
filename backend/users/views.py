@@ -17,6 +17,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
+from django.db import models
+from users.models import Attendance
 
 @csrf_exempt
 def signup(request):
@@ -281,3 +283,86 @@ def student_detail(request, id):
 
     else:
         return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+@login_required
+@csrf_exempt
+def get_attendance(request):
+    if request.method == 'GET':
+        email = request.user.email
+        attendance = Attendance.objects.filter(student__email=email)
+        attendance_data = []
+
+        for att in attendance:
+            attendance_data.append({
+                'id': att.id,
+                'date': att.date,
+                'present': att.present,
+                'student': att.student.id
+            })
+
+        return JsonResponse({
+            'success': True,
+            'data': attendance_data
+        })
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+@login_required
+@csrf_exempt
+def get_attendance(request, month, year):
+    if request.method == 'GET':
+        user = request.user  # Assuming you have authentication in place
+        
+        if not month or not year:
+            return JsonResponse({'message': 'Month and year parameters are required.'}, status=400)
+        
+        try:
+            month = int(month)
+            year = int(year)
+        except ValueError:
+            return JsonResponse({'message': 'Invalid month or year.'}, status=400)
+        
+        attendance_queryset = Attendance.objects.filter(user=user, month=month, year=year).order_by('day')
+        
+        # Build the response data
+        attendance_data = {
+            'month': month,
+            'year': year,
+            'streak': attendance_queryset[0].streak if attendance_queryset else 0,
+            'attendance': [attendance.streak > 0 for attendance in attendance_queryset]
+        }
+        
+        return JsonResponse({'success': True, 'data': attendance_data})
+    else:
+        return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+    
+@user_passes_test(lambda u: u.is_superuser)
+def get_all_attendance_of_day(request, year, month, day):
+    if not day or not month or not year:
+        return JsonResponse({'message': 'Day, month, and year parameters are required.'}, status=400)
+
+    try:
+        day = int(day)
+        month = int(month)
+        year = int(year)
+    except ValueError:
+        return JsonResponse({'message': 'Invalid day, month, or year.'}, status=400)
+
+    # Retrieve the attendance data for the specified day, month, and year
+    attendance_queryset = Attendance.objects.filter(day=day, month=month, year=year)
+
+    present_users = []
+    absent_users = []
+
+    for attendance in attendance_queryset:
+        user = attendance.user
+        user_data = {'name': user.name, 'email': user.email}
+
+        if attendance.streak > 0:
+            present_users.append(user_data)
+        else:
+            absent_users.append(user_data)
+
+    attendance_result = {'present_users': present_users, 'absent_users': absent_users}
+
+    return JsonResponse({'success': True, 'data': attendance_result})

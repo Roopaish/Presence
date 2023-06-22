@@ -1,6 +1,6 @@
 import json
 import os
-from users.models import UserAttendance
+from users.models import Attendance
 import cv2
 import face_recognition
 from imutils import paths
@@ -20,6 +20,15 @@ from django.views.decorators.csrf import csrf_exempt
 def encode_images(request):
     dataset_path = 'datasets'
     encodings_path = 'encodings.pickle'
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        'status_group',
+        {
+            'type': 'status_message',
+            'message': "encoding_images"
+        }
+    )
 
     if not os.path.exists(dataset_path):
         return JsonResponse({'success': False, 'message': 'Dataset directory not found'}, status=400)
@@ -28,8 +37,6 @@ def encode_images(request):
 
     known_encodings = []
     known_names = []
-
-    channel_layer = get_channel_layer()
 
     for (i, image_path) in enumerate(image_paths):
         name = os.path.basename(os.path.dirname(image_path))
@@ -69,6 +76,13 @@ def encode_images(request):
             'message': "Encoded images for all users"
         }
     )
+    async_to_sync(channel_layer.group_send)(
+        'status_group',
+        {
+            'type': 'status_message',
+            'message': "none"
+        }
+    )
 
     return JsonResponse({'success': True})
 
@@ -82,6 +96,7 @@ def take_attendance(request):
     if request.method == 'POST':
         json_data = json.loads(request.body)
         display_video = json_data.get('display_video') or False
+        model = json_data.get('model') or 'hog'
         channel_layer = get_channel_layer()
         dataset_path = 'datasets'
         encodings_path = 'encodings.pickle'
@@ -98,6 +113,13 @@ def take_attendance(request):
                 'message': "[INFO] Loading encodings..."
             }
         )
+        async_to_sync(channel_layer.group_send)(
+            'status_group',
+            {
+                'type': 'status_message',
+                'message': "taking_attendance"
+            }
+        )
         data = pickle.loads(open(encodings_path, "rb").read())
         # Initialize the video stream and allow the camera sensor to warm up
         async_to_sync(channel_layer.group_send)(
@@ -111,9 +133,24 @@ def take_attendance(request):
         time.sleep(2.0)
 
         detected_users = []
+        names = []
+        # get all users and make a list of {name, email}
+        attendance_stream = {
+            'present_users': [],
+            'absent_users': [],
+        }
+        users = User.objects.all()
+        for user in users:
+            attendance_stream['absent_users'].append({
+                'name': user.first_name + ' ' + user.last_name,
+                'email': user.email
+            })
+        
+        today = date.today()
+        attendance_queryset = Attendance.objects.filter(day=today.day, month=today.month, year=today.year)
+
         # Loop over frames from the video file stream
         while True:
-            print(stop_stream)
             if stop_stream:
                 break
             # Grab the frame from the threaded video stream
@@ -127,7 +164,7 @@ def take_attendance(request):
             # Detect the (x, y)-coordinates of the bounding boxes
             # corresponding to each face in the input frame, then compute
             # the facial embeddings for each face
-            boxes = face_recognition.face_locations(rgb, model='hog')
+            boxes = face_recognition.face_locations(rgb, model=model)
             encodings = face_recognition.face_encodings(rgb, boxes)
             names = []
 
@@ -157,13 +194,26 @@ def take_attendance(request):
                 names.append(name)
                 if name not in detected_users:
                     detected_users.append(name)
+                    striped_email = name.split('@')[0]
                     async_to_sync(channel_layer.group_send)(
                         'log_group',
                         {
                             'type': 'log_message',
-                            'message': f"Recognized {name}"
+                            'message': f"Recognized {striped_email}"
                         }
                     )
+                    for user in attendance_stream['absent_users']:
+                        if user['email'] == name:
+                            attendance_stream['absent_users'].remove(user)
+                            attendance_stream['present_users'].append(user)
+                            async_to_sync(channel_layer.group_send)(
+                                'attendance_group',
+                                {
+                                    'type': 'attendance_message',
+                                    'message': attendance_stream
+                                }
+                            )
+                            break
                 
                 if len(detected_users) >= len(image_paths):
                     stop_stream = True
@@ -185,52 +235,97 @@ def take_attendance(request):
                     # Display the output frame to the screen
                     cv2.imshow("Frame", frame)
                     key = cv2.waitKey(1) & 0xFF
-                    # If the `q` key was pressed, break from the loop
-                    if key == ord("q"):
-                        break            
+
+            # If the `q` key was pressed, break from the loop
+            if key == ord("q"):
+                break            
 
         stop_stream = False
         # Do a bit of cleanup
         cv2.destroyAllWindows()
         vs.stop()
+        vs.stream.release()
 
-        # Check attendance and mark it in the database
-        today = date.today()
-        attendance_queryset = UserAttendance.objects.filter(day=today.day, month=today.month, year=today.year)
-        previous_day = today - timedelta(days=1)
+        try:
+            # Check attendance and mark it in the database
+            today = date.today()
+            attendance_queryset = Attendance.objects.filter(day=today.day, month=today.month, year=today.year)
+            previous_day = today - timedelta(days=1)
 
-        # Get the list of UserAttendance objects for the previous day
-        previous_attendance_queryset = UserAttendance.objects.filter(day=previous_day.day, month=previous_day.month, year=previous_day.year)
+            if previous_day.weekday() == 5:  # If previous day was Saturday
+                previous_day -= timedelta(days=1)  
 
-        # Create a dictionary to store attendance status (present or not) for each user
-        attendance_status = {}
+            # Get the list of Attendance objects for the previous day
+            previous_attendance_queryset = Attendance.objects.filter(day=previous_day.day, month=previous_day.month, year=previous_day.year)
 
-        for email in names:
-            if previous_attendance_queryset.filter(user__email=email).exists():
-                attendance_status[email] = True
-            else:
-                attendance_status[email] = False
+            # Create a dictionary to store attendance status (present or not) for each user
+            prev_attendance_status = {}
 
-        for email, is_present in attendance_status.items():
-            user = User.objects.get(email=email)
-            attendance, created = UserAttendance.objects.get_or_create(
-                user=user, day=today.day, month=today.month, year=today.year
-            ) 
+            for email in names:
+                if previous_attendance_queryset.filter(user__email=email).exists():
+                    prev_attendance_status[email] = True
+                else:
+                    prev_attendance_status[email] = False
 
-            if is_present:
-                attendance.streak = attendance.streak + 1 if attendance_queryset.filter(user__name=name).exists() else 1
-                async_to_sync(channel_layer.group_send)(
-                    'log_group',
-                    {
-                        'type': 'log_message',
-                        'message': f"Attendance taken for {name} (from embeddings)"
-                    }
-                )
-            else:
-                attendance.streak = 1
-            attendance.save()
+            for email, was_present in prev_attendance_status.items():
+                user = User.objects.get(email=email)
+                attendance, created = Attendance.objects.get_or_create(
+                    user=user, day=today.day, month=today.month, year=today.year
+                ) 
+                striped_email = email.split('@')[0]
 
-        return JsonResponse({'success': True, 'message': 'Attendance marked successfully'})
+                if was_present:
+                    attendance.streak = attendance.streak + 1 if attendance_queryset.filter(user__name=email).exists() else 1
+                    async_to_sync(channel_layer.group_send)(
+                        'log_group',
+                        {
+                            'type': 'log_message',
+                            'message': f"Attendance taken for {striped_email}"
+                        }
+                    )
+                else:
+                    attendance.streak = 1
+                    async_to_sync(channel_layer.group_send)(
+                        'log_group',
+                        {
+                            'type': 'log_message',
+                            'message': f"Attendance taken for {striped_email}"
+                        }
+                    )
+                attendance.save()
+
+            async_to_sync(channel_layer.group_send)(
+                'log_group',
+                {
+                    'type': 'log_message',
+                    'message': f"Stopped taking attendance for {today}"
+                }
+            )
+            async_to_sync(channel_layer.group_send)(
+                'status_group',
+                {
+                    'type': 'status_message',
+                    'message': "none"
+                }
+            )
+            return JsonResponse({'success': True, 'message': 'Attendance marked successfully'})
+        except Exception as e:
+            async_to_sync(channel_layer.group_send)(
+                'log_group',
+                {
+                    'type': 'log_message',
+                    'message': f"Error while taking attendance: {e}"
+                }
+            )
+            async_to_sync(channel_layer.group_send)(
+                'status_group',
+                {
+                    'type': 'status_message',
+                    'message': "none"
+                }
+            )
+            return JsonResponse({'success': False, 'message': f'Error while taking attendance: {e}'}, status=500)
+        
     else:
         return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
 

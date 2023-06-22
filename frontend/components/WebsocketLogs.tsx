@@ -8,7 +8,7 @@ export default function WebsocketLogs() {
   const logsContainerRef = useRef<HTMLUListElement | null>(null);
 
   useEffect(() => {
-    socketRef.current = new WebSocket('ws://localhost:8000/ws/logs');
+    socketRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_SOCKET_URL}/ws/logs`);
 
     socketRef.current.onmessage = (event) => {
       const message = JSON.parse(event.data);

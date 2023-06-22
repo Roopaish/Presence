@@ -2,12 +2,16 @@
 
 import AdminCard from "@/components/AdminCard";
 import WebsocketLogs from "@/components/WebsocketLogs";
+import { StatusContext } from "@/configs/StatusProvider";
 import { encodeImages, stopTakingAttendance, takeAttendance } from "@/providers/face_ml";
 import Link from "next/link";
+import { useContext } from "react";
 import { useMutation } from "react-query";
 import { toast } from "react-toastify";
 
 export default function AdminPage() {
+  const { status } = useContext(StatusContext);
+
   const { mutate: _encode, isLoading: isEncoding } = useMutation({
     mutationKey: "encodeImages",
     mutationFn: encodeImages,
@@ -26,7 +30,7 @@ export default function AdminPage() {
       toast.success("Attendance Taken Successfully")
     },
     onError: () => {
-      toast.error("Something went wrong")
+      // toast.error("Something went wrong")
     }
   })
 
@@ -37,7 +41,7 @@ export default function AdminPage() {
       toast.success("Attendance Stopped Successfully")
     },
     onError: () => {
-      toast.error("Something went wrong")
+      // toast.error("Something went wrong")
     }
   })
 
@@ -50,10 +54,10 @@ export default function AdminPage() {
         <Link href="/admin/reports">
           <AdminCard title="View Reports" />
         </Link>
-        <button onClick={() => _encode()} disabled={isEncoding}>
-          <AdminCard title="Train The Model">
+        <button onClick={() => _encode()} disabled={isEncoding || status == "encoding_images" || isTakingAttendance || status == "taking_attendance"}>
+          <AdminCard title="Train The Model" disabled={isEncoding || status == "encoding_images" || isTakingAttendance || status == "taking_attendance"}>
             {
-              isEncoding && (
+              (isEncoding || status == "encoding_images") && (
                 <div className="flex gap-5 items-center justify-center h-full">
                   <h2 className="text-3xl font-extrabold text-white animate-bounce">TRAINING</h2>
                 </div>
@@ -62,15 +66,19 @@ export default function AdminPage() {
           </AdminCard>
         </button>
         <button onClick={() => {
-          if (isTakingAttendance) {
+          if (status == "taking_attendance") {
             _stopTakingAttendance()
           } else {
             _takeAttendance({ display_video: true })
           }
-        }}>
-          <AdminCard title={isTakingAttendance ? "Stop Taking Attendance" : "Start Taking Attendance"}>
+        }}
+          disabled={isEncoding || status == "encoding_images"}
+        >
+          <AdminCard title={(isTakingAttendance || status == "taking_attendance") ? "Stop Taking Attendance" : "Start Taking Attendance"}
+            disabled={isEncoding || status == "encoding_images"}
+          >
             {
-              isTakingAttendance && (
+              (isTakingAttendance || status == "taking_attendance") && (
                 <div className="flex gap-5 items-center justify-center h-full">
                   <div className="w-10 h-10 rounded-full bg-red-600 animate-blink"></div>
                   <h2 className="text-3xl font-extrabold text-white">REC</h2>
