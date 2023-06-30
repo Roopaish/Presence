@@ -190,6 +190,9 @@ def take_attendance(request):
                     # will select the first entry in the dictionary)
                     name = max(counts, key=counts.get)
 
+                    confidence = (counts[name] / len(matchedIdxs)) * 100
+                    print(f"Recognized face: {name} (Confidence: {confidence:.2f}%)")
+
                 # Update the list of names
                 names.append(name)
                 if name not in detected_users:

@@ -66,7 +66,7 @@ export default function AdminPage() {
           </AdminCard>
         </button>
         <button onClick={() => {
-          if (status == "taking_attendance") {
+          if (isTakingAttendance || status == "taking_attendance") {
             _stopTakingAttendance()
           } else {
             _takeAttendance({ display_video: true })
