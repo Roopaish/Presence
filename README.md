@@ -14,7 +14,7 @@
   - Create a virtual environment using `python -m venv .venv`
   - Activate the virtual environment using `.venv\Scripts\activate`
   - Install the dependencies using `pip install -r requirements.txt`
-  - Copy the `.env.example` file to `.env` and fill the values (if not using email, leave it as it is)
+  - Copy the `.env.example` file to `.env` and fill the values
   - Run the migrations using `python manage.py migrate`
   - Create a superuser using `python manage.py createsuperuser`
   - Run the server using `python manage.py runserver` or `daphne presence.asgi:application` to run the server with asgi configuration to handle both http and websocket requests

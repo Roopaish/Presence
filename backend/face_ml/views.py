@@ -1,20 +1,24 @@
 import json
 import os
-from users.models import Attendance
-import cv2
-import face_recognition
-from imutils import paths
 import pickle
 import time
-from django.http import JsonResponse
-from django.contrib.admin.views.decorators import user_passes_test
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from imutils.video import VideoStream
 from datetime import date, timedelta
+
+import cv2
+import face_recognition
 import imutils
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from django.contrib.admin.views.decorators import user_passes_test
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from imutils import paths
+from imutils.video import VideoStream
+from django.core.exceptions import ObjectDoesNotExist
+
+from users.models import Attendance
+
 
 @user_passes_test(lambda u: u.is_superuser)
 def encode_images(request):
@@ -59,12 +63,12 @@ def encode_images(request):
         )
 
     async_to_sync(channel_layer.group_send)(
-            'log_group',
-            {
-                'type': 'log_message',
-                'message': f"[INFO] Serializing encodings..."
-            }
-        )
+        'log_group',
+        {
+            'type': 'log_message',
+            'message': f"[INFO] Serializing encodings..."
+        }
+    )
     data = {"encodings": known_encodings, "names": known_names}
     with open(encodings_path, "wb") as f:
         f.write(pickle.dumps(data))
@@ -86,7 +90,9 @@ def encode_images(request):
 
     return JsonResponse({'success': True})
 
+
 stop_stream = False
+
 
 @user_passes_test(lambda u: u.is_superuser)
 @csrf_exempt
@@ -97,6 +103,12 @@ def take_attendance(request):
         json_data = json.loads(request.body)
         display_video = json_data.get('display_video') or False
         model = json_data.get('model') or 'hog'
+        day = date.today().day
+        month = date.today().month
+        year = date.today().year
+        if Attendance.objects.filter(day=day, month=month, year=year).exists():
+            return JsonResponse({'success': False, 'message': 'Attendance for today is already taken'}, status=400)
+
         channel_layer = get_channel_layer()
         dataset_path = 'datasets'
         encodings_path = 'encodings.pickle'
@@ -145,9 +157,10 @@ def take_attendance(request):
                 'name': user.first_name + ' ' + user.last_name,
                 'email': user.email
             })
-        
+
         today = date.today()
-        attendance_queryset = Attendance.objects.filter(day=today.day, month=today.month, year=today.year)
+        attendance_queryset = Attendance.objects.filter(
+            day=today.day, month=today.month, year=today.year)
 
         # Loop over frames from the video file stream
         while True:
@@ -171,7 +184,8 @@ def take_attendance(request):
             # Loop over the facial embeddings
             for encoding in encodings:
                 # Attempt to match each face in the input image to our known encodings
-                matches = face_recognition.compare_faces(data["encodings"], encoding)
+                matches = face_recognition.compare_faces(
+                    data["encodings"], encoding)
                 name = "Unknown"
                 # Check to see if we have found a match
                 if True in matches:
@@ -191,7 +205,8 @@ def take_attendance(request):
                     name = max(counts, key=counts.get)
 
                     confidence = (counts[name] / len(matchedIdxs)) * 100
-                    print(f"Recognized face: {name} (Confidence: {confidence:.2f}%)")
+                    print(
+                        f"Recognized face: {name} (Confidence: {confidence:.2f}%)")
 
                 # Update the list of names
                 names.append(name)
@@ -217,7 +232,7 @@ def take_attendance(request):
                                 }
                             )
                             break
-                
+
                 if len(detected_users) >= len(image_paths):
                     stop_stream = True
                     break
@@ -231,9 +246,11 @@ def take_attendance(request):
                     bottom = int(bottom * r)
                     left = int(left * r)
                     # Draw the predicted face name on the image
-                    cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (left, top),
+                                  (right, bottom), (0, 255, 0), 2)
                     y = top - 15 if top - 15 > 15 else top + 15
-                    cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 2)
+                    cv2.putText(frame, name, (left, y),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 2)
 
                     # Display the output frame to the screen
                     cv2.imshow("Frame", frame)
@@ -241,7 +258,7 @@ def take_attendance(request):
 
             # If the `q` key was pressed, break from the loop
             if key == ord("q"):
-                break            
+                break
 
         stop_stream = False
         # Do a bit of cleanup
@@ -252,14 +269,16 @@ def take_attendance(request):
         try:
             # Check attendance and mark it in the database
             today = date.today()
-            attendance_queryset = Attendance.objects.filter(day=today.day, month=today.month, year=today.year)
+            attendance_queryset = Attendance.objects.filter(
+                day=today.day, month=today.month, year=today.year)
             previous_day = today - timedelta(days=1)
 
             if previous_day.weekday() == 5:  # If previous day was Saturday
-                previous_day -= timedelta(days=1)  
+                previous_day -= timedelta(days=1)
 
             # Get the list of Attendance objects for the previous day
-            previous_attendance_queryset = Attendance.objects.filter(day=previous_day.day, month=previous_day.month, year=previous_day.year)
+            previous_attendance_queryset = Attendance.objects.filter(
+                day=previous_day.day, month=previous_day.month, year=previous_day.year)
 
             # Create a dictionary to store attendance status (present or not) for each user
             prev_attendance_status = {}
@@ -274,11 +293,13 @@ def take_attendance(request):
                 user = User.objects.get(email=email)
                 attendance, created = Attendance.objects.get_or_create(
                     user=user, day=today.day, month=today.month, year=today.year
-                ) 
+                )
                 striped_email = email.split('@')[0]
 
                 if was_present:
-                    attendance.streak = attendance.streak + 1 if attendance_queryset.filter(user__name=email).exists() else 1
+                    attendance.streak = attendance.streak + \
+                        1 if attendance_queryset.filter(
+                            user__name=email).exists() else 1
                     async_to_sync(channel_layer.group_send)(
                         'log_group',
                         {
@@ -328,7 +349,7 @@ def take_attendance(request):
                 }
             )
             return JsonResponse({'success': False, 'message': f'Error while taking attendance: {e}'}, status=500)
-        
+
     else:
         return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
 
@@ -342,8 +363,55 @@ def stop_video_stream(request):
         if stop_stream:
             return JsonResponse({'success': False, 'message': 'Video stream is already stopped'})
 
-        stop_stream = True  
+        stop_stream = True
 
         return JsonResponse({'success': True, 'message': 'Video stream stopped successfully'})
-    
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+@csrf_exempt
+def reset_attendance(request):
+    if request.method == 'POST':
+
+        return JsonResponse({'success': True, 'message': 'Attendance reset successfully'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+@csrf_exempt
+def populate_attendance(request):
+    if request.method == 'POST':
+        json_data = json.loads(request.body)
+        month = json_data.get('month')
+        year = json_data.get('year')
+        data = json_data.get('data')
+
+        if month is None or year is None or data is None:
+            return JsonResponse({'success': False, 'message': 'Year, month, and data are required'}, status=400)
+
+        try:
+            for entry in data:
+                day = entry.get('day')
+                users = entry.get('users')
+                if day is None or not isinstance(day, int) or not 1 <= day <= 31 or not isinstance(users, list):
+                    return JsonResponse({'success': False, 'message': 'Invalid data format'}, status=400)
+
+                for email in users:
+                    try:
+                        user = User.objects.get(email=email)
+                        attendance, created = Attendance.objects.get_or_create(
+                            user=user, day=day, month=month, year=year
+                        )
+                        attendance.streak += 1
+                        attendance.save()
+                    except ObjectDoesNotExist:
+                        return JsonResponse({'success': False, 'message': f'User with email {email} not found'}, status=404)
+
+            return JsonResponse({'success': True, 'message': 'Attendance populated successfully'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Error while populating attendance: {e}'}, status=500)
+
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)

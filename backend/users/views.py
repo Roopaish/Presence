@@ -20,6 +20,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.db import models
 from users.models import Attendance
 
+
 @csrf_exempt
 def signup(request):
     if request.method == 'POST':
@@ -50,7 +51,7 @@ def signup(request):
             user = User.objects.create_user(
                 username=username, email=email, password=password,
                 first_name=first_name, last_name=last_name,
-                is_superuser = is_superuser or False
+                is_superuser=is_superuser or False
             )
 
             user.save()
@@ -74,7 +75,7 @@ def user_login(request):
             return JsonResponse(
                 {'success': False, 'message': 'Please provide email and password.'}, status=400
             )
-        
+
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
@@ -127,10 +128,10 @@ def forgot_password(request):
                 }
             )
 
-            send_mail(subject=mail_subject, 
+            send_mail(subject=mail_subject,
                       message='',
-                      from_email='settings.EMAIL_HOST_USER', 
-                      recipient_list= [email],
+                      from_email='settings.EMAIL_HOST_USER',
+                      recipient_list=[email],
                       html_message=email_body
                       )
 
@@ -202,6 +203,7 @@ def google_login(request):
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=400)
 
+
 @login_required
 @csrf_exempt
 def save_images(request):
@@ -213,12 +215,12 @@ def save_images(request):
 
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-        
+
         for index, image in enumerate(images):
-                file_path = os.path.join(folder_path, f'{index + 1}.jpg')
-                with open(file_path, 'wb') as f:
-                    for chunk in image.chunks():
-                        f.write(chunk)
+            file_path = os.path.join(folder_path, f'{index + 1}.jpg')
+            with open(file_path, 'wb') as f:
+                for chunk in image.chunks():
+                    f.write(chunk)
 
         request.user.is_staff = True
         request.user.save()
@@ -226,7 +228,7 @@ def save_images(request):
         return JsonResponse({'success': True, 'message': 'Images saved successfully'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=400)
-    
+
 
 # @api_view(['GET'])
 # def student_list(request):
@@ -263,14 +265,14 @@ def student_detail(request, id):
         student = get_object_or_404(User, id=id, is_superuser=False)
         # Customize the response data according to your requirements
         data = {
-            'id': student.id,
+            'id': id,
             'username': student.username,
             'email': student.email,
             'first_name': student.first_name,
             'last_name': student.last_name,
             'has_submitted_images': student.is_staff or False,
             'is_superuser': student.is_superuser or False
-            }
+        }
         return JsonResponse({
             'success': True,
             'data': data
@@ -284,58 +286,40 @@ def student_detail(request, id):
     else:
         return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
 
-@login_required
-@csrf_exempt
-def get_attendance(request):
-    if request.method == 'GET':
-        email = request.user.email
-        attendance = Attendance.objects.filter(student__email=email)
-        attendance_data = []
-
-        for att in attendance:
-            attendance_data.append({
-                'id': att.id,
-                'date': att.date,
-                'present': att.present,
-                'student': att.student.id
-            })
-
-        return JsonResponse({
-            'success': True,
-            'data': attendance_data
-        })
-
-    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
 
 @login_required
 @csrf_exempt
 def get_attendance(request, month, year):
     if request.method == 'GET':
-        user = request.user  # Assuming you have authentication in place
-        
+        user = request.user
+
         if not month or not year:
             return JsonResponse({'message': 'Month and year parameters are required.'}, status=400)
-        
+
         try:
             month = int(month)
             year = int(year)
         except ValueError:
             return JsonResponse({'message': 'Invalid month or year.'}, status=400)
-        
-        attendance_queryset = Attendance.objects.filter(user=user, month=month, year=year).order_by('day')
-        
+
+        attendance_queryset = Attendance.objects.filter(
+            user=user, month=month, year=year).order_by('day')
+
         # Build the response data
         attendance_data = {
             'month': month,
             'year': year,
             'streak': attendance_queryset[0].streak if attendance_queryset else 0,
+            'start_day': attendance_queryset[0].day if attendance_queryset else 0,
+            'end_day': attendance_queryset[len(attendance_queryset) - 1].day if attendance_queryset else 0,
             'attendance': [attendance.streak > 0 for attendance in attendance_queryset]
         }
-        
+
         return JsonResponse({'success': True, 'data': attendance_data})
     else:
         return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
-    
+
+
 @user_passes_test(lambda u: u.is_superuser)
 def get_all_attendance_of_day(request, year, month, day):
     if not day or not month or not year:
@@ -349,7 +333,8 @@ def get_all_attendance_of_day(request, year, month, day):
         return JsonResponse({'message': 'Invalid day, month, or year.'}, status=400)
 
     # Retrieve the attendance data for the specified day, month, and year
-    attendance_queryset = Attendance.objects.filter(day=day, month=month, year=year)
+    attendance_queryset = Attendance.objects.filter(
+        day=day, month=month, year=year)
 
     present_users = []
     absent_users = []
@@ -363,6 +348,7 @@ def get_all_attendance_of_day(request, year, month, day):
         else:
             absent_users.append(user_data)
 
-    attendance_result = {'present_users': present_users, 'absent_users': absent_users}
+    attendance_result = {'present_users': present_users,
+                         'absent_users': absent_users}
 
     return JsonResponse({'success': True, 'data': attendance_result})

@@ -96,7 +96,7 @@ export default function LoginPage() {
             name="username"
             placeholder="ram.191704@ncit.edu.np"
             required
-            label="College Email"
+            label="Email"
           />
           <Input type="password" name="password" required label="Password" />
           <div className="mb-4">

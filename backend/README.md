@@ -1,10 +1,4 @@
-## Running the project
-
-1.  Install dependencies `pip install -r requirements.txt`
-2.  Open terminal, you will see venv in the terminal else activate it `.venv\Scripts\activate`
-3.  `python manage.py migrate`
-4.  `python manage.py createsuperuser` (to create a admin then go to localhost:8000/admin/ and login)
-5.  `python manage.py runserver` or `daphne presence.asgi:application` to run the server with asgi configuration to handle both http and websocket requests
+# Basic django commands
 
 ## Creating new app
 

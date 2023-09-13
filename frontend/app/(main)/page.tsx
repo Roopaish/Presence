@@ -4,17 +4,26 @@ import Calendar from "@/components/Calendar";
 import Icon from "@/components/Icon";
 import Stats from "@/components/Stats";
 import { me } from "@/providers/auth";
+import { getStudentAttendance } from "@/providers/student";
 import { getGreeting } from "@/utils/getGreeting";
 import Link from "next/link";
 import { useState } from "react";
 import { useQuery } from "react-query";
 
 export default function StudentPage() {
-  const [currentMonth, setCurrentMonth] = useState(1)
+  const [currentMonth, setCurrentMonth] = useState(0)
 
   const { data: user } = useQuery({
     queryKey: "user",
     queryFn: me,
+  })
+
+  const { data: attendance } = useQuery({
+    queryKey: 'user-attendance',
+    queryFn: () => getStudentAttendance({
+      month: currentMonth,
+      year: 2023
+    })
   })
 
 
@@ -35,8 +44,8 @@ export default function StudentPage() {
       </h1>
 
       <div className="mt-6 mb-10 flex flex-col sm:flex-row gap-5">
-        <Stats data="14 days" title="Current Streak" iconType="fire" />
-        <Link href="/submit-images"> <Stats data="Submit" title="Your images" iconType="selfie" />
+        <Stats data={`${attendance?.data.streak} days`} title="Current Streak" iconType="fire" />
+        <Link href="/submit-images"> <Stats data={user?.data.has_submitted_images ? "Re-submit" : "Submit"} title="Your images" iconType="selfie" />
         </Link>
       </div>
 
