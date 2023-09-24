@@ -34,7 +34,6 @@ export default function AdminPage() {
     mutationFn: deleteAttendanceForTheDay,
     onSuccess: (data) => {
       setShouldRetakeAttendance(false)
-      console.log(data)
       toast.success(data.message)
     },
     onError: (data) => {
