@@ -372,7 +372,6 @@ def delete_attendance(request, year, month, day):
             # Try to get the attendance entry for the specified date
             try:
                 attendance = Attendance.objects.get(year=year, month=month, day=day)
-                return JsonResponse({'success': False, 'message':attendance}, status=200)
 
             except Attendance.DoesNotExist:
                 return JsonResponse({'success': False, 'message': 'Attendance entry not found for the specified date'}, status=404)
