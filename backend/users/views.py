@@ -352,3 +352,37 @@ def get_all_attendance_of_day(request, year, month, day):
                          'absent_users': absent_users}
 
     return JsonResponse({'success': True, 'data': attendance_result})
+
+
+
+
+@user_passes_test(lambda u: u.is_superuser)
+@csrf_exempt
+
+def delete_attendance(request, year, month, day):
+    print(request)
+   
+    if request.method == 'DELETE':
+        
+
+        try:
+            # Convert year, month, and day to integers
+            year, month, day = int(year), int(month), int(day)
+
+            # Try to get the attendance entry for the specified date
+            try:
+                attendance = Attendance.objects.get(year=year, month=month, day=day)
+                return JsonResponse({'success': False, 'message':attendance}, status=200)
+
+            except Attendance.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Attendance entry not found for the specified date'}, status=404)
+
+            # Delete the attendance entry
+            attendance.delete()
+
+            return JsonResponse({'success': True, 'message': f'Attendance entry deleted for {day}/{month}/{year}'}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Error while deleting attendance entry: {e}'}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=200)
