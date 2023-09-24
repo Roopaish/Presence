@@ -4,13 +4,15 @@ import AdminCard from "@/components/AdminCard";
 import WebsocketLogs from "@/components/WebsocketLogs";
 import { StatusContext } from "@/configs/StatusProvider";
 import { encodeImages, stopTakingAttendance, takeAttendance } from "@/providers/face_ml";
+import { deleteAttendanceForTheDay } from "@/providers/student";
 import Link from "next/link";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useMutation } from "react-query";
 import { toast } from "react-toastify";
 
 export default function AdminPage() {
   const { status } = useContext(StatusContext);
+  const [shouldRetakeAttendance, setShouldRetakeAttendance] = useState<boolean>(false);
 
   const { mutate: _encode, isLoading: isEncoding } = useMutation({
     mutationKey: "encodeImages",
@@ -23,11 +25,48 @@ export default function AdminPage() {
     }
   })
 
-  const { mutate: _takeAttendance, isLoading: isTakingAttendance } = useMutation({
+
+  const {
+    mutate: _deleteAttendance,
+  
+  } = useMutation({
+    mutationKey: 'deleteAttendance',
+    mutationFn: deleteAttendanceForTheDay,
+    onSuccess: (data) => {
+      setShouldRetakeAttendance(false)
+      toast.success(data.message)
+    },
+    onError: (data) => {
+      setShouldRetakeAttendance(false)
+       toast.error('');
+    }
+  })
+
+
+
+  useEffect(() => {
+    if (shouldRetakeAttendance) {
+      _deleteAttendance({ year: new Date().getFullYear(), month: new Date().getMonth(), day: new Date().getDay() });
+      setShouldRetakeAttendance(false)
+    }
+  }, [shouldRetakeAttendance]);
+
+console.log(new Date().getFullYear(),new Date().getMonth(), new Date().getDay())
+
+
+
+  const { mutate: _takeAttendance,data:attendanceresp, isLoading: isTakingAttendance } = useMutation({
     mutationKey: "takeAttendance",
     mutationFn: takeAttendance,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if(!data?.message.includes("Attendance for today is already taken")){
+
       toast.success("Attendance Taken Successfully")
+      }
+      else{
+        const userInput = window.confirm("Attendance for today is already taken. Do you want to retake attendance?");
+        setShouldRetakeAttendance(userInput)
+      }
     },
     onError: () => {
       // toast.error("Something went wrong")
@@ -38,12 +77,15 @@ export default function AdminPage() {
     mutationKey: "stopTakingAttendance",
     mutationFn: stopTakingAttendance,
     onSuccess: () => {
-      toast.success("Attendance Stopped Successfully")
-    },
+        toast.success("Attendance Stopped Successfully")
+       
+      },
     onError: () => {
       // toast.error("Something went wrong")
     }
   })
+
+console.log('data=',attendanceresp,new Date().getDate())
 
   return (
     <>
@@ -54,6 +96,7 @@ export default function AdminPage() {
         <Link href="/admin/reports">
           <AdminCard title="View Reports" />
         </Link>
+     
         <button onClick={() => _encode()} disabled={isEncoding || status == "encoding_images" || isTakingAttendance || status == "taking_attendance"}>
           <AdminCard title="Train The Model" disabled={isEncoding || status == "encoding_images" || isTakingAttendance || status == "taking_attendance"}>
             {
@@ -66,6 +109,9 @@ export default function AdminPage() {
           </AdminCard>
         </button>
         <button onClick={() => {
+             
+
+
           if (isTakingAttendance || status == "taking_attendance") {
             _stopTakingAttendance()
           } else {

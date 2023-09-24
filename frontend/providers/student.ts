@@ -63,6 +63,9 @@ export async function getStudentAttendance({
   return res.data;
 }
 
+
+
+
 export async function getAllStudentAttendance({
   month,
   year,
@@ -78,6 +81,23 @@ export async function getAllStudentAttendance({
 
   return res.data;
 }
+
+export async function deleteAttendanceForTheDay({ 
+  year,
+  month,
+  day,
+}: {
+  month: number;
+  year: number;
+  day: number;
+}): Promise<{ success: boolean; message: string }> {
+
+  console.log(year,month,day)
+  const res = await api.delete<{ success: boolean; message: string }>(`/users/delete-attendance/${year}/${month}/${day}`);
+  return res.data;
+}
+
+
 
 interface Attendance {
   month: string;

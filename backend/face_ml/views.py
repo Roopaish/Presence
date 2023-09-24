@@ -99,6 +99,7 @@ stop_stream = False
 def take_attendance(request):
     global stop_stream
 
+
     if request.method == 'POST':
         json_data = json.loads(request.body)
         display_video = json_data.get('display_video') or False
@@ -106,8 +107,11 @@ def take_attendance(request):
         day = date.today().day
         month = date.today().month
         year = date.today().year
+        
+      
+
         if Attendance.objects.filter(day=day, month=month, year=year).exists():
-            return JsonResponse({'success': False, 'message': 'Attendance for today is already taken'}, status=400)
+            return JsonResponse({'success': day, 'message': 'Attendance for today is already taken'}, status=200)
 
         channel_layer = get_channel_layer()
         dataset_path = 'datasets'
@@ -415,3 +419,5 @@ def populate_attendance(request):
             return JsonResponse({'success': False, 'message': f'Error while populating attendance: {e}'}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+

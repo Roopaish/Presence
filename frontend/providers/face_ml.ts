@@ -20,3 +20,7 @@ export async function stopTakingAttendance() {
   const res = await api.post<SimpleResponse>("/face-ml/stop-taking-attendance");
   return res.data;
 }
+
+
+
+

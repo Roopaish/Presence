@@ -15,4 +15,6 @@ urlpatterns = [
     path('student/<id>',views.student_detail),
     path('attendance/<year>/<month>',views.get_attendance),
     path('all-attendance/<year>/<month>/<day>',views.get_all_attendance_of_day),
+    path('delete-attendance/<year>/<month>/<day>', views.delete_attendance, name='delete_attendance'),
+
 ]
