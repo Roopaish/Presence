@@ -92,7 +92,6 @@ export async function deleteAttendanceForTheDay({
   day: number;
 }): Promise<{ success: boolean; message: string }> {
 
-  console.log(year,month,day)
   const res = await api.delete<{ success: boolean; message: string }>(`/users/delete-attendance/${year}/${month}/${day}`);
   return res.data;
 }

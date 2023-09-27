@@ -46,12 +46,11 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (shouldRetakeAttendance) {
-      _deleteAttendance({ year: new Date().getFullYear(), month: new Date().getMonth(), day: new Date().getDay() });
+      _deleteAttendance({ year: new Date().getFullYear(), month:new Date().getMonth() + 1, day:  new Date().getDate() });
       setShouldRetakeAttendance(false)
     }
   }, [shouldRetakeAttendance]);
 
-console.log(new Date().getFullYear(),new Date().getMonth(), new Date().getDay())
 
 
 
@@ -85,7 +84,6 @@ console.log(new Date().getFullYear(),new Date().getMonth(), new Date().getDay())
     }
   })
 
-console.log('data=',attendanceresp,new Date().getDate())
 
   return (
     <>

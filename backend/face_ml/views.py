@@ -108,7 +108,8 @@ def take_attendance(request):
         month = date.today().month
         year = date.today().year
         
-      
+    # return JsonResponse({'success': month, 'message': 'month'},status=200)
+         
 
         if Attendance.objects.filter(day=day, month=month, year=year).exists():
             return JsonResponse({'success': day, 'message': 'Attendance for today is already taken'}, status=200)
@@ -301,16 +302,29 @@ def take_attendance(request):
                 striped_email = email.split('@')[0]
 
                 if was_present:
-                    attendance.streak = attendance.streak + \
-                        1 if attendance_queryset.filter(
-                            user__name=email).exists() else 1
-                    async_to_sync(channel_layer.group_send)(
-                        'log_group',
-                        {
-                            'type': 'log_message',
-                            'message': f"Attendance taken for {striped_email}"
-                        }
-                    )
+                    if email in detected_users:
+                            attendance.streak = attendance.streak + 1
+                    else:
+                            attendance.streak = 1
+                            async_to_sync(channel_layer.group_send)(
+                                'log_group',
+                            {
+                                'type': 'log_message',
+                                'message': f"Attendance taken for {striped_email}"
+                            }
+                        )
+                    # attendance.streak = attendance.streak + \
+                    #     1 if attendance_queryset.filter(
+                    #         user__name=email).exists() else 1
+          
+          
+                    # async_to_sync(channel_layer.group_send)(
+                    #     'log_group',
+                    #     {
+                    #         'type': 'log_message',
+                    #         'message': f"Attendance taken for {striped_email}"
+                    #     }
+                    # )
                 else:
                     attendance.streak = 1
                     async_to_sync(channel_layer.group_send)(

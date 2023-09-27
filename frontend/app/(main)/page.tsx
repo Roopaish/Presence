@@ -11,7 +11,7 @@ import { useState } from "react";
 import { useQuery } from "react-query";
 
 export default function StudentPage() {
-  const [currentMonth, setCurrentMonth] = useState(0)
+  const [currentMonth, setCurrentMonth] = useState(1)
 
   const { data: user } = useQuery({
     queryKey: "user",
@@ -19,7 +19,7 @@ export default function StudentPage() {
   })
 
   const { data: attendance } = useQuery({
-    queryKey: 'user-attendance',
+    queryKey: ['user-attendance',currentMonth],
     queryFn: () => getStudentAttendance({
       month: currentMonth,
       year: 2023
@@ -33,6 +33,9 @@ export default function StudentPage() {
   }
 
   const [greeting, iconType] = getGreeting();
+
+
+  console.log('current month=',typeof currentMonth)
 
   return (
     <main className="font-extrabold text-xl">
@@ -49,7 +52,7 @@ export default function StudentPage() {
         </Link>
       </div>
 
-      <Calendar month={currentMonth} year={2023} handleChange={handleChange} />
+      <Calendar month={currentMonth} year={2023} attendance={attendance} handleChange={handleChange} />
     </main>
   );
 }
