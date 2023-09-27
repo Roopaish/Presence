@@ -19,6 +19,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.db import models
 from users.models import Attendance
+from datetime import datetime, timedelta
 
 
 @csrf_exempt
@@ -287,6 +288,64 @@ def student_detail(request, id):
         return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
 
 
+
+
+
+
+
+
+def count_attendance_streak(attendance_queryset):
+    attendance_list = list(attendance_queryset)
+    streak = 0
+    max_streak = 0
+    prev_date = None
+
+    for attendance in attendance_list:
+        current_date = datetime(attendance.year, attendance.month, attendance.day)
+
+        # Check if the day is not a Saturday
+        if current_date.weekday() != 5:
+            if prev_date is not None and prev_date + timedelta(days=1) == current_date:
+                streak += 1
+            else:
+                streak = 1
+
+            if streak > max_streak:
+                max_streak = streak
+
+            prev_date = current_date
+        else:
+            streak = 0
+
+    # Include the current day in the streak calculation
+    current_date = datetime.now()
+    if current_date.weekday() != 5:  # Check if the current day is not a Saturday
+        if prev_date is not None and prev_date + timedelta(days=1) == current_date:
+            streak += 1
+        else:
+            streak = 1
+
+        if streak > max_streak:
+            max_streak = streak
+
+    return max_streak
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @login_required
 @csrf_exempt
 def get_attendance(request, month, year):
@@ -304,15 +363,38 @@ def get_attendance(request, month, year):
 
         attendance_queryset = Attendance.objects.filter(
             user=user, month=month, year=year).order_by('day')
+         
+        prev_month = month - 1 if month > 1 else 12
+        prev_year = year if month > 1 else year - 1
+        prev_attendance_queryset = Attendance.objects.filter(
+            user=user, month=prev_month, year=prev_year).order_by('day')
+
+        max_streak_current_month = count_attendance_streak(attendance_queryset)
+        max_streak_prev_month = count_attendance_streak(prev_attendance_queryset)
+
+        max_streak = max(max_streak_current_month, max_streak_prev_month)
+       
+        if len(attendance_queryset) > 0 and attendance_queryset[0].day > 1:
+            max_streak = 0
+
+        current_day = datetime.now().day
+
+        if current_day in [attendance.day for attendance in attendance_queryset if attendance.streak > 0]:
+             max_streak = 1
+        else:
+             max_streak = 0
+
 
         # Build the response data
         attendance_data = {
             'month': month,
             'year': year,
-            'streak': attendance_queryset[0].streak if attendance_queryset else 0,
+            'streak': max_streak,
             'start_day': attendance_queryset[0].day if attendance_queryset else 0,
             'end_day': attendance_queryset[len(attendance_queryset) - 1].day if attendance_queryset else 0,
-            'attendance': [attendance.streak > 0 for attendance in attendance_queryset]
+            # 'attendance': [attendance.streak > 0 for attendance in attendance_queryset]
+            'attendance_days': [attendance.day for attendance in attendance_queryset if attendance.streak > 0]
+
         }
 
         return JsonResponse({'success': True, 'data': attendance_data})
