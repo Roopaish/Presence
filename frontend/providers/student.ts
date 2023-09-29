@@ -82,6 +82,29 @@ export async function getAllStudentAttendance({
   return res.data;
 }
 
+
+export async function getStudentAttendanceByMonth({
+date,
+}: {
+  date: string
+}) {
+
+ const [year, month] = date.split('-');
+
+ let monthfac = +month;
+
+ const res = await api.get<{ success: boolean; data: AllAttendance }>(
+    `/users/get_attendance_by_month_year/${year}/${monthfac}`
+  );
+
+  return res.data;
+}
+
+
+
+
+
+
 export async function deleteAttendanceForTheDay({ 
   year,
   month,
