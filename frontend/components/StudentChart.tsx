@@ -133,6 +133,7 @@ ReactFC.fcRoot(FusionCharts, mscolumn2d, FusionTheme);
 const StudentChart=({data,date}:{data:any,date:any})=>{
 
 let groupedData = {};
+let groupedDataAb = {};
 
 function numericMonthToStringMonth(monthNumber: number) {
   if (monthNumber >= 1 && monthNumber <= 12) {
@@ -162,6 +163,7 @@ data?.data.attendance.present_users.forEach((entry: { date: any; }) => {
 });
 
 
+
 const allEntries: string[] = []; 
 
 Object.keys(groupedData).forEach((date, index) => {
@@ -171,6 +173,7 @@ Object.keys(groupedData).forEach((date, index) => {
 });
 
 const lengths = [];
+const absenntlength=[]
 
 for (const key in groupedData) {
   if (Object.hasOwnProperty.call(groupedData, key)) {
@@ -179,6 +182,24 @@ for (const key in groupedData) {
   }
 }
 
+
+//absent
+
+data?.data.absent_users.forEach((entry: { date: any; }) => {
+  let date = entry.date;
+  if (!groupedDataAb[date]) {
+      groupedDataAb[date] = [];
+  }
+  groupedDataAb[date].push(entry);
+});
+for (const key in groupedDataAb) {
+  if (Object.hasOwnProperty.call(groupedDataAb, key)) {
+    const array = groupedDataAb[key];
+    absenntlength.push({ index: key, length: array.length });
+  }
+}
+
+console.log('ab=',data.to)
 
 
 
@@ -218,23 +239,11 @@ const chartConfigs = {
     dataset: [
       {
         seriesname: "Total student",
-        data: [
-          {
-            value: "20"
-          },
-          {
-            value: "20"
-          },
-          {
-            value: "20"
-          },
-          {
-            value: "20"
-          },
-          {
-            value: "20"
+        data:allEntries.map(()=>{
+          return{
+           value:data.total_student,
           }
-        ]
+       })
       },
       {
         seriesname: "Present student",
@@ -246,11 +255,11 @@ const chartConfigs = {
       },
       {
         seriesname: "Absent student",
-        data:lengths.map((data)=>{
-           return{
-            value:data.length.toString()
-           }
-        })
+        data:absenntlength.map((data)=>{
+          return{
+           value:data.length.toString(),
+          }
+       })
       
       }
     ]
