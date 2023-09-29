@@ -434,6 +434,8 @@ def get_all_attendance_of_day(request, year, month, day):
     present_users = []
     absent_users = []
 
+
+
     for attendance in attendance_queryset:
         user = attendance.user
         user_data = {'name': user.name, 'email': user.email}
@@ -508,15 +510,19 @@ def get_attendance_by_month_year(request,year, month):
 
     absent_users = User.objects.filter(id__in=absent_user_ids)
  
+
+    absent_users_data = []
+
     for attendance in attendance_queryset:
         user = attendance.user
          
         user_data = {'name': user.username, 'email': user.email,'date':attendance.day}
         present_users.append(user_data)
-   
+        
+        absent_users_data.extend([{'name': user.username, 'email': user.email, 'date': attendance.day} for user in absent_users])
     attendance_result = {'present_users': present_users}
    
-    absent_users_data = [{'name': user.username, 'email': user.email} for user in absent_users]
+    # absent_users_data = [{'name': user.username, 'email': user.email,'date':attendance.day} for user in absent_users]
 
 
 
@@ -526,3 +532,5 @@ def get_attendance_by_month_year(request,year, month):
             'attendance': attendance_result,
             'absent_users': absent_users_data
         },'total_student':total_students},status=200)
+    
+   
