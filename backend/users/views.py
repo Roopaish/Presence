@@ -363,26 +363,39 @@ def get_attendance(request, month, year):
 
         attendance_queryset = Attendance.objects.filter(
             user=user, month=month, year=year).order_by('day')
-         
-        prev_month = month - 1 if month > 1 else 12
-        prev_year = year if month > 1 else year - 1
-        prev_attendance_queryset = Attendance.objects.filter(
-            user=user, month=prev_month, year=prev_year).order_by('day')
 
-        max_streak_current_month = count_attendance_streak(attendance_queryset)
-        max_streak_prev_month = count_attendance_streak(prev_attendance_queryset)
-
-        max_streak = max(max_streak_current_month, max_streak_prev_month)
-       
-        if len(attendance_queryset) > 0 and attendance_queryset[0].day > 1:
+        if not  attendance_queryset.exists():
             max_streak = 0
+
+        else:    
+             prev_month = month - 1 if month > 1 else 12
+             prev_year = year if month > 1 else year - 1
+             prev_attendance_queryset = Attendance.objects.filter(
+                user=user, month=prev_month, year=prev_year).order_by('day')
+
+             max_streak_current_month = count_attendance_streak(attendance_queryset)
+             max_streak_prev_month = count_attendance_streak(prev_attendance_queryset)
+
+             max_streak = max(max_streak_current_month, max_streak_prev_month)
+       
+        # if len(attendance_queryset) > 0 and attendance_queryset[0].day > 1:
+        #     max_streak = 0
 
         current_day = datetime.now().day
 
-        if current_day in [attendance.day for attendance in attendance_queryset if attendance.streak > 0]:
-             max_streak = 1
-        else:
-             max_streak = 0
+        # is_current_day_present = prev_attendance_queryset.filter(day=current_day).exists()
+         
+         
+
+        
+
+
+        # if current_day not in [attendance.day for attendance in attendance_queryset if attendance.streak > 0]:
+        #    max_streak = 0
+        
+
+
+
 
 
         # Build the response data
@@ -467,3 +480,49 @@ def delete_attendance(request, year, month, day):
             return JsonResponse({'success': False, 'message': f'Error while deleting attendance entry: {e}'}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=200)
+
+
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def get_attendance_by_month_year(request,year, month):
+
+    if  not month or not year:
+        return JsonResponse({'message': ' month, and year parameters are required.'}, status=400)
+   
+    try:
+        month = int(month)
+        year = int(year)
+    except ValueError:
+        return JsonResponse({'message': 'Invalid month or year.'}, status=400)
+
+    attendance_queryset = Attendance.objects.filter(
+        month=month, year=year)
+
+    present_users = []
+    user_ids = set(User.objects.filter(is_superuser=False).values_list('id', flat=True))
+
+    present_user_ids = set(attendance_queryset.exclude(user__is_superuser=True).values_list('user_id', flat=True))
+ 
+    absent_user_ids = user_ids - present_user_ids
+
+    absent_users = User.objects.filter(id__in=absent_user_ids)
+ 
+    for attendance in attendance_queryset:
+        user = attendance.user
+         
+        user_data = {'name': user.username, 'email': user.email,'date':attendance.day}
+        present_users.append(user_data)
+   
+    attendance_result = {'present_users': present_users}
+   
+    absent_users_data = [{'name': user.username, 'email': user.email} for user in absent_users]
+
+
+
+    total_students = User.objects.filter(is_superuser=False).count()
+
+    return JsonResponse({'success': True, 'data': {
+            'attendance': attendance_result,
+            'absent_users': absent_users_data
+        },'total_student':total_students},status=200)

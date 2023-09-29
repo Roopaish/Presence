@@ -35,7 +35,6 @@ export default function StudentPage() {
   const [greeting, iconType] = getGreeting();
 
 
-  console.log('current month=',typeof currentMonth)
 
   return (
     <main className="font-extrabold text-xl">
