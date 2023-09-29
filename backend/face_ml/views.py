@@ -286,7 +286,7 @@ def take_attendance(request):
                 day=previous_day.day, month=previous_day.month, year=previous_day.year)
 
             # Create a dictionary to store attendance status (present or not) for each user
-            prev_attendance_status = {}
+            prev_attendance_status = {} # [{email:boolean}]
 
             for email in names:
                 if previous_attendance_queryset.filter(user__email=email).exists():
@@ -300,6 +300,8 @@ def take_attendance(request):
                     user=user, day=today.day, month=today.month, year=today.year
                 )
                 striped_email = email.split('@')[0]
+                print(email)
+                print(was_present)
 
                 if was_present:
                     if email in detected_users:
@@ -316,8 +318,8 @@ def take_attendance(request):
                     # attendance.streak = attendance.streak + \
                     #     1 if attendance_queryset.filter(
                     #         user__name=email).exists() else 1
-          
-          
+        
+        
                     # async_to_sync(channel_layer.group_send)(
                     #     'log_group',
                     #     {
@@ -334,7 +336,9 @@ def take_attendance(request):
                             'message': f"Attendance taken for {striped_email}"
                         }
                     )
+                
                 attendance.save()
+\
 
             async_to_sync(channel_layer.group_send)(
                 'log_group',
