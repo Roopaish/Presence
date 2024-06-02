@@ -8,6 +8,7 @@
 \usepackage{indentfirst}
 \linespread{1.5}
 \usepackage{geometry}
+\usepackage{minted}
 \usepackage{float} 
 \usepackage{times}
 \geometry{left = 1.5in,
@@ -27,7 +28,7 @@
 	\begin{center}
 	
 	\large%14pt
-	A Minor Project Proposal on
+	A Minor Project Final Report on
 	
 	\huge %24pt
 	\textbf{Presence: Automated Attendance System}
@@ -46,17 +47,17 @@
 	\textbf {Rupesh Budhathoki, 191721} \\
 	\textbf {Apsara Bishwokarma, 191704} \\
 	\textbf {Sampada Kharel, 191723} \\
-	\textbf {Sudarshan Kshettri, 191729} \\
+	\textbf {Sudarshan Kshetri, 191729} \\
  
 	\vfill
 	
-	%Under the supervision of: \\
-	%\textbf {PROJECT.SUPERVISOR.NAME}
+	Under the supervision of: \\
+	\textbf {Yogesh Deo}
 	
-	%\vfill
+	\vfill
 	
 	Date: \\
-	\textbf {17 May 2023}
+	\textbf {27 Sept 2023}
 	
 	\vfill
 	
@@ -87,8 +88,15 @@
 \newpage
 \pagenumbering{Roman}
 \setcounter{page}{1}
-\addcontentsline{toc}{section}{\numberline{}Abstract}
-\section*{Abstract}
+\addcontentsline{toc}{section}
+
+\section{Acknowledgement}
+\input{chapters/acknowledgement}\\
+\newpage
+
+
+
+\section{Abstract}
 \input{chapters/abstract}\\\\
 \newpage
 
@@ -110,28 +118,50 @@
 \subsection{Project Objectives}
 \input{chapters/introduction/project-objectives}\\
 
+
 \subsection{Significance of the study}
 \input{chapters/introduction/significance-of-study}\\
 
 \newpage
 
-\section{Scope and Limitation}
-\input{chapters/scope}\\
-\break
-\input{chapters/limitation}
-\newpage
+% \section{Scope and Limitation}
+% \input{chapters/scope}\\
+% \break
+% \input{chapters/limitation}
+% \newpage
 
 \section{Literature Review}
 \input{chapters/literature-review}
 \newpage
 
-\section{Proposed Methodology}
+\section{ Methodology}
 \input{chapters/methodology}
 \newpage
 
-\section{Proposed Deliverable}
-\input{chapters/deliverable}
+% \section{ Tasks Done so far}
+% \input{chapters/tasks-done-so-far}
+% \newpage
+
+% \section{ Performance Analysis and Validation}
+% \input{chapters/performance-analysis-and-validation.tex}
+% \newpage
+
+\section{Conclusion}
+\input{chapters/conclusion}
 \newpage
+
+
+ \section{Further Works / Recommendations }
+\input{chapters/further-works-recommendations}
+\newpage
+
+% \section{Tasks Remaining }
+% \input{chapters/tasks-remaining.tex}
+% \newpage
+
+% \section{Deliverable/Output}
+% \input{chapters/deliverable}
+% \newpage
 
 \section{Project Task and Time schedule}
 \input{chapters/task-schedule}
@@ -140,5 +170,10 @@
 \newpage
 \section{References}
 \printbibliography[heading=none]
+
+
+\section{Appendix}
+\input{chapters/result-and-discussion}
+\newpage
 
 \end{document}

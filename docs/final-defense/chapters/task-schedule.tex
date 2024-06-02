@@ -1,0 +1,45 @@
+
+The working time period for the project was four months. The project was completed by the end of the spring semester as per the requirements of the university. The major task division among the team members was mentioned in the table. \ref{table:taskdiv}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Team Member} & \textbf{Assigned Task}                                   \\ \hline
+Rupesh Budhathoki    & Project Management, Overall Coordination, FullStack Development \\ \hline
+Apsara Bishwokarma   & Frontend Development                     \\ \hline
+Sampada Kharel       & Backend Development            \\ \hline
+Sudarshan Kshettry   & FullStack Development\\ \hline
+\end{tabular}
+\caption{Division of tasks among project team members}
+\label{table:taskdiv}
+\end{table}
+
+The time schedule for the development of the project was illustrated in the following Gantt chart.\\
+
+\begin{table}[ht]
+  \centering
+    \begin{ganttchart}[
+        vgrid={*{4}{draw=none}, dotted},
+        hgrid,
+        x unit=0.7cm,
+        y unit chart=0.8cm,
+        bar/.append style={fill=cyan!60, rounded corners=2pt},
+        bar incomplete/.append style={fill=yellow!60},
+        title/.append style={draw=none, fill=white},
+        title label font=\bfseries\small,
+        bar label font=\small,
+        milestone label font=\small,
+        group label font=\small\bfseries,
+    ]{1}{16}
+        \gantttitle{Weeks}{16} \\
+        \gantttitlelist{1,...,16}{1} \\
+        \ganttgroup{Project Phases}{1}{16} \\
+        \ganttbar{Requirement Analysis}{1}{2} \\
+        \ganttbar{Design and Implementation}{3}{12} \\
+        \ganttbar{Testing and Debugging}{11}{14} \\
+        \ganttbar{Deployment}{14}{15} \\
+        \ganttmilestone{Maintenance}{16} \\
+    \end{ganttchart}
+  \caption{Gantt Chart}
+\end{table}

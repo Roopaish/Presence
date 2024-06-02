@@ -1,0 +1,20 @@
+This section focuses on evaluating the effectiveness, efficiency, and reliability of the implemented system. This involves conducting thorough assessments and tests to ensure that the system meets the required performance standards. Here's an overview of the performance analysis and validation aspects:
+
+\begin{itemize}
+\item \textbf{Facial Recognition Accuracy:} The accuracy of the facial recognition system is a critical factor in reliable attendance tracking. The performance analysis involves measuring the precision and recall rates of the HOG-based facial recognition method. Through validation, we verify that the system can correctly identify and match students' faces for accurate attendance marking. It struggles a bit when the side view of a student's face is shown. This is mainly due to less number of datasets we are using which is 10 images per student.
+
+\item \textbf{Response Time of APIs and WebSockets}: The speed and responsiveness of the REST APIs and WebSockets are crucial for seamless data transfer and real-time attendance updates. The performance analysis involves measuring the average response time of API requests and WebSocket communication. Validation ensures that the system meets the performance requirements, providing prompt and efficient communication between clients and the server.
+Some of the API's response time are as follows
+\begin{itemize}
+    \item GET: /all-students  20 to 30ms
+    \item POST: /create-new-student 300ms
+    \item Training time per image 1 to 2s
+\end{itemize}
+WebSockets are instantaneous once they are connected. 
+
+\item \textbf{System Stability}: The project is made with new and growing technologies like Nextjs and Django, which provides great scalability in the future and is able to handle many concurrent users easily. However, in our case, the number of people accessing the system is very low.
+
+\item \textbf{Authentication Mechanisms}: The authentication mechanisms, including login, login with Google, forgot password, and reset the password, are critical for system security and user access control. The performance analysis involves evaluating the response time and security measures of these authentication processes. Validation ensures that the authentication mechanisms function as intended, providing secure and efficient user authentication.
+\end{itemize}
+
+By conducting comprehensive performance analysis and validation, we can identify and address any performance bottlenecks, optimize system components, and ensure that the Presence Project meets the required performance standards. This process helps in delivering a reliable, efficient, and high-performing attendance management solution.
